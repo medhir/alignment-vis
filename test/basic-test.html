@@ -17,17 +17,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../web-component-tester/browser.js"></script>
 
     <!-- Step 1: import the element to test -->
-    <link rel="import" href="../seed-element.html">
+    <link rel="import" href="../alignment-vis.html">
   </head>
   <body>
 
     <!-- You can use the document as a place to set up your fixtures. -->
-    <seed-element></seed-element>
+    <alignment-vis></alignment-vis>
 
     <script>
-      var myEl = document.querySelector('seed-element');
+      var myEl = document.querySelector('alignment-vis');
 
-      suite('<seed-element>', function() {
+      suite('<alignment-vis>', function() {
 
         test('defines the "author" property', function() {
           assert.equal(myEl.author.name, 'Dimitri Glazkov');
@@ -35,14 +35,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('says hello', function() {
-          assert.equal(myEl.sayHello(), 'seed-element says, Hello World!');
+          assert.equal(myEl.sayHello(), 'alignment-vis says, Hello World!');
 
           var greetings = myEl.sayHello('greetings Earthlings');
-          assert.equal(greetings, 'seed-element says, greetings Earthlings');
+          assert.equal(greetings, 'alignment-vis says, greetings Earthlings');
         });
 
         test('fires lasers', function(done) {
-          myEl.addEventListener('seed-element-lasers', function(event) {
+          myEl.addEventListener('alignment-vis-lasers', function(event) {
             assert.equal(event.detail.sound, 'Pew pew!');
             done();
           });

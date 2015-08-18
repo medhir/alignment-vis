@@ -10,15 +10,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 
 <!--
-An element providing a solution to no problem in particular.
+An element that visualizes sequence alignment data. 
 
 Example:
 
-    <seed-element></seed-element>
+    <alignment-vis></alignment-vis>
 
 @demo
 -->
-<dom-module id="seed-element">
+<dom-module id="alignment-vis">
 
   <style>
     :host {
@@ -35,7 +35,7 @@ Example:
   </style>
 
   <template>
-    <h1>&lt;seed-element&gt;</h1>
+    <h1>&lt;alignment-vis&gt;</h1>
     <content></content>
     <p class="author">
       <img src="{{author.image}}">
@@ -50,7 +50,7 @@ Example:
 
   Polymer({
 
-    is: 'seed-element',
+    is: 'alignment-vis',
 
     properties: {
 
@@ -117,9 +117,9 @@ Example:
     // Element Behavior
 
     /**
-     * The `seed-element-lasers` event is fired whenever `fireLasers` is called.
+     * The `alignment-vis-lasers` event is fired whenever `fireLasers` is called.
      *
-     * @event seed-element-lasers
+     * @event alignment-vis-lasers
      * @detail {{sound: String}}
      */
 
@@ -131,7 +131,7 @@ Example:
      */
     sayHello: function(greeting) {
       var response = greeting || 'Hello World!';
-      return 'seed-element says, ' + response;
+      return 'alignment-vis says, ' + response;
     },
 
     /**

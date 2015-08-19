@@ -30,24 +30,28 @@ Example:
       font-size: 1.7em;
     }
 
-    .sequenceTable tr:hover{
-      outline-width: thin;
-      outline-style: solid;
-      outline-color: #000;
-    }
-
     td {
       cursor: pointer;
     }
 
-    td:hover {
+    .seqChar:hover {
       background-color: black;
       color: white;
+    }
+
+    .seqChar {
+      text-align: center;
+      padding-left: 1px;
+      padding-right: 1px;
     }
 
     .accession {
       padding-right: 20px;
       font-weight: bolder;
+    }
+
+    .notAligned {
+      background-color: rgba(255, 252, 81, 0.4);
     }
   </style>
 
@@ -57,7 +61,7 @@ Example:
         <tr>
           <td class="accession">{{sequence.accession}}</td>
           <template is="dom-repeat" items="{{_splitSequence(sequence.sequence)}}">
-            <td>{{item}}</td>
+            <td class$="{{_getAlignClass(index)}}">{{item}}</td>
           </template>
         </tr>
       </template>
@@ -114,7 +118,8 @@ Example:
         var split = row.split(' ');
         data.push({
           accession: split[0], 
-          sequence: split[1]
+          sequence: split[1], 
+          annotations: []
         });
       });
 
@@ -146,10 +151,37 @@ Example:
       return sequence.split('');
     },
 
+    _getAlignClass: function(index) {
+      if(this.colArray[index] === true) {
+        return 'seqChar aligned';
+      } else {
+        return 'seqChar notAligned';
+      }
+    }, 
+
+    _determineAlign: function(sequences) {
+      this.colArray = [];
+      var length = sequences[0].sequence.length;
+      for(var i = 0; i < length; i++) {
+        this.colArray.push(this._isColumnAligned(i, sequences));
+      }
+    }, 
+
+    _isColumnAligned: function(columnIndex, sequences) {
+      var letter = sequences[0].sequence[columnIndex];
+      for(var i = 1; i < sequences.length; i++) {
+        if(sequences[i].sequence[columnIndex] !== letter) {
+          return false;
+        }
+      }
+      return true;
+    },
+
     // Element Lifecycle
 
     ready: function() {
-
+      //generate alignment matrix
+      this._determineAlign(this.sequences);
     },
 
     attached: function() {

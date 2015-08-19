@@ -7,7 +7,8 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
-<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="./bower_components/paper-checkbox/paper-checkbox.html">
 
 <!--
 An element that visualizes sequence alignment data. 
@@ -53,20 +54,24 @@ Example:
     .notAligned {
       background-color: rgba(255, 252, 81, 0.4);
     }
+
+    .selectSeq {
+      padding-left: 10px;
+    }
   </style>
 
   <template>
     <table class="sequenceTable">
-      <template is="dom-repeat" items="{{sequences}}" as="sequence">
+      <template is="dom-repeat" items="{{sequences}}" as="sequence" index-as="seqIndex">
         <tr>
           <td class="accession">{{sequence.accession}}</td>
           <template is="dom-repeat" items="{{_splitSequence(sequence.sequence)}}">
             <td class$="{{_getAlignClass(index)}}">{{item}}</td>
           </template>
+          <td class="selectSeq"><paper-checkbox checked></paper-checkbox></td>
         </tr>
       </template>
     </table>
-
   </template>
 
 </dom-module>

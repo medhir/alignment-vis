@@ -26,22 +26,42 @@ Example:
       box-sizing: border-box;
     }
 
-    .author img {
-      float: left;
-      margin-right: 5px;
-      max-height: 100px;
-      max-width: 100px;
+    .sequenceTable {
+      font-size: 1.7em;
+    }
+
+    .sequenceTable tr:hover{
+      outline-width: thin;
+      outline-style: solid;
+      outline-color: #000;
+    }
+
+    td {
+      cursor: pointer;
+    }
+
+    td:hover {
+      background-color: black;
+      color: white;
+    }
+
+    .accession {
+      padding-right: 20px;
+      font-weight: bolder;
     }
   </style>
 
   <template>
-
-    <template is="dom-repeat" items="{{sequences}}" as="sequence">
-      <p>
-        <span class="accession">{{sequence.accession}}</span> 
-        <span class="sequence">{{sequence.sequence}}</span>
-      </p>
-    </template>
+    <table class="sequenceTable">
+      <template is="dom-repeat" items="{{sequences}}" as="sequence">
+        <tr>
+          <td class="accession">{{sequence.accession}}</td>
+          <template is="dom-repeat" items="{{_splitSequence(sequence.sequence)}}">
+            <td>{{item}}</td>
+          </template>
+        </tr>
+      </template>
+    </table>
 
   </template>
 
@@ -101,7 +121,7 @@ Example:
       return data;
     },
 
-    //there is some bug that does not allow using String.prototype.split with '\n' ... 
+    //there is some bug that does not allow using String.prototype.split OR regex matching with '\n' ... 
     //so this hack will have to do for now
     splitByNewline: function(string) {
       var parsed = [];
@@ -120,6 +140,10 @@ Example:
       parsed.push(currString);
 
       return parsed;
+    },
+
+    _splitSequence: function(sequence) {
+      return sequence.split('');
     },
 
     // Element Lifecycle

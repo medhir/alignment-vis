@@ -36,7 +36,12 @@ Example:
 
   <template>
 
-    <p>{{alignment}}</p>
+    <template is="dom-repeat" items="{{sequences}}" as="sequence">
+      <p>
+        <span class="accession">{{sequence.accession}}</span> 
+        <span class="sequence">{{sequence.sequence}}</span>
+      </p>
+    </template>
 
   </template>
 
@@ -73,7 +78,7 @@ Example:
        * Exposes alignment data as an array
        */
 
-      data: {
+      sequences: {
         type: Array, 
         computed: 'parseAlignment(alignment)'
       }
@@ -83,7 +88,7 @@ Example:
     // Helper functions
     parseAlignment: function(seqString) {
       var data = [];
-      var parsed = seqString.split('\n');
+      var parsed = this.splitByNewline(seqString);
 
       parsed.forEach(function(row) {
         var split = row.split(' ');
@@ -94,6 +99,27 @@ Example:
       });
 
       return data;
+    },
+
+    //there is some bug that does not allow using String.prototype.split with '\n' ... 
+    //so this hack will have to do for now
+    splitByNewline: function(string) {
+      var parsed = [];
+      
+      var currString = '', index = 0;
+      while(index < string.length) {
+        if (string[index] === '\\' && string[index+1] === 'n') {
+          parsed.push(currString);
+          currString = '';
+          index += 2;
+        } else {
+          currString += string[index];
+          index++;
+        }
+      } 
+      parsed.push(currString);
+
+      return parsed;
     },
 
     // Element Lifecycle

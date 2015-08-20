@@ -62,13 +62,13 @@ Example:
 
   <template>
     <table class="sequenceTable">
-      <template is="dom-repeat" items="{{sequences}}" as="sequence" index-as="seqIndex">
+      <template is="dom-repeat" items="{{parsedData}}" as="sequence" index-as="seqIndex">
         <tr>
           <td class="accession">{{sequence.accession}}</td>
           <template is="dom-repeat" items="{{_splitSequence(sequence.sequence)}}">
             <td class$="{{_getAlignClass(index)}}">{{item}}</td>
           </template>
-          <td class="selectSeq"><paper-checkbox checked></paper-checkbox></td>
+          <td class="selectSeq"><paper-checkbox checked on-change="_reAlign"></paper-checkbox></td>
         </tr>
       </template>
     </table>
@@ -94,6 +94,7 @@ Example:
        *  accessionA PKS--KTVKST-V
        *  accessionB PKV-VKTVKST-V
        *  accessionC PK---KTVK-T-V
+       *  accessionD PKV-VKTVK-T-V
        *
        *  will convert to 
        *
@@ -107,7 +108,7 @@ Example:
        * Exposes alignment data as an array
        */
 
-      sequences: {
+      parsedData: {
         type: Array, 
         computed: 'parseAlignment(alignment)'
       }
@@ -121,11 +122,11 @@ Example:
 
       parsed.forEach(function(row) {
         var split = row.split(' ');
-        data.push({
-          accession: split[0], 
-          sequence: split[1], 
-          annotations: []
-        });
+        var sequence = split[1].split('');
+        sequence.accession = split[0];
+        sequence.annotations = [];
+
+        data.push(sequence);
       });
 
       return data;
@@ -156,11 +157,56 @@ Example:
       return sequence.split('');
     },
 
-    _getAlignClass: function(index) {
-      if(this.colArray[index] === true) {
-        return 'seqChar aligned';
+    /*
+
+    Approach: 
+
+      - function takes in an array containing one or more sequences
+      - for each column in matrix, create an object with letters as keys, count frequency of each letter
+          ignore '-'
+      - if only one key exists in object, column is aligned
+          assign 'seqChar align' to new matrix that contains visualization data
+      - if two or more characters exist
+          determine most frequently occuring character 
+          assign 'seqChar unalign' to max occuring char or '-'
+          assign 'seqChar mismatch' to all other chars
+
+    */
+
+    _determineAlignment: function(sequences) {
+      var charObjectsByColumn = [];
+      sequences.forEach(function(sequence) {
+        var charObject = {};
+        sequence.forEach(function(character) {
+          if(character !== '-') {
+            charObject[character] = (charObject[character]+1) || 1;
+          }
+        });
+        charObjectsByColumn.push(charObject);
+      });
+    },
+
+    _getCharObjectsByColumn: function(sequences) {
+      var charObjects = [];
+      sequences.forEach(function(sequence) {
+        var charObject = {};
+        sequence.forEach(function(character) {
+          if(character !== '-') {
+            charObject[character] = (charObject[character]+1) || 1;
+          }
+        });
+        charObjects.push(charObject);
+      });
+      return charObjects;
+    }, 
+
+    _getAlignClass: function(row, col) {
+      if (this.alignData[row][col] === 0) {
+        return 'seqChar align';
+      } else if (this.alignData[row][col] === 1) {
+        return 'seqChar unaligned';
       } else {
-        return 'seqChar notAligned';
+        return 'seqChar mismatch';
       }
     }, 
 
@@ -180,6 +226,10 @@ Example:
         }
       }
       return true;
+    },
+
+    _reAlign: function() {
+      console.dir(arguments);
     },
 
     // Element Lifecycle

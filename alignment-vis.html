@@ -70,7 +70,7 @@ Example:
 
   <template>
     <table class="sequenceTable">
-      <template is="dom-repeat" items="{{parsedData}}" as="sequence" index-as="rowIndex">
+      <template is="dom-repeat" id="totalAlignVis" items="{{parsedData}}" as="sequence" index-as="rowIndex">
         <tr>
           <td class="accession">{{sequence.accession}}</td>
           <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
@@ -79,20 +79,20 @@ Example:
           <td class="selectSeq"><paper-checkbox on-change="toggleSelection"></paper-checkbox></td>
         </tr>
       </template>
+    </table>
 
-      <array-selector items="{{parsedData}}" selected="{{selected}}" multi toggle></array-selector>
-      
-      <div>Selected subset of sequences: </div>
-      <table class="sequenceTable">
-        <template is="dom-repeat" items="{{selected}}" as="sequence" index-as="rowIndex">
-          <tr>
-            <td class="accession">{{sequence.accession}}</td>
-            <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
-              <td class$="{{_getSelectAlignClass(rowIndex, colIndex)}}">{{character}}</td>
-            </template>
-          </tr>
-        </template>
-      </table>
+    <array-selector items="{{parsedData}}" id="alignSelector" selected="{{selected}}" multi toggle></array-selector>
+    
+    <div>Selected subset of sequences: </div>
+    <table class="sequenceTable">
+      <template is="dom-repeat" items="{{selected}}" as="sequence" index-as="rowIndex">
+        <tr>
+          <td class="accession">{{sequence.accession}}</td>
+          <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
+            <td class$="{{_getSelectAlignClass(rowIndex, colIndex)}}">{{character}}</td>
+          </template>
+        </tr>
+      </template>
     </table>
   </template>
 
@@ -269,6 +269,14 @@ Example:
       this.alignmentMatrix = []
       this._determineAlignment(this.parsedData, this.alignmentMatrix);
     },
+
+    toggleSelection: function(e) {
+      var item = this.$.totalAlignVis.itemForElement(e.target);
+      this.$.alignSelector.select(item);
+
+      this.selectAlignmentMatrix = [];
+      this._determineAlignment(this.selected, this.selectAlignmentMatrix);
+    }, 
 
     attached: function() {
       // `attached` fires once the element and its parents have been inserted

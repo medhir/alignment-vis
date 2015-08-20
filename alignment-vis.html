@@ -51,8 +51,16 @@ Example:
       font-weight: bolder;
     }
 
-    .notAligned {
-      background-color: rgba(255, 252, 81, 0.4);
+    .align {
+      background-color: #FFF;
+    }
+
+    .unalign {
+      background-color: rgba(255, 252, 81, 0.2);
+    }
+
+    .mismatch {
+      background-color: rgb(255, 252, 81);
     }
 
     .selectSeq {
@@ -62,11 +70,11 @@ Example:
 
   <template>
     <table class="sequenceTable">
-      <template is="dom-repeat" items="{{parsedData}}" as="sequence" index-as="seqIndex">
+      <template is="dom-repeat" items="{{parsedData}}" as="sequence" index-as="rowIndex">
         <tr>
           <td class="accession">{{sequence.accession}}</td>
-          <template is="dom-repeat" items="{{_splitSequence(sequence.sequence)}}">
-            <td class$="{{_getAlignClass(index)}}">{{item}}</td>
+          <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
+            <td class$="{{_getAlignClass(rowIndex, colIndex)}}">{{character}}</td>
           </template>
           <td class="selectSeq"><paper-checkbox checked on-change="_reAlign"></paper-checkbox></td>
         </tr>
@@ -174,21 +182,21 @@ Example:
     */
 
     _determineAlignment: function(sequences) {
-      var charObjectsByColumn = _getCharObjectsByColumn(sequences);
+      var charObjectsByColumn = this._getCharObjectsByColumn(sequences);
       charObjectsByColumn.forEach(function(object) {
-        if(Object.keys(object).length === 1) {
+        if(Object.keys(object).length <= 1) {
           object.aligned = true;
         } else {
           object.aligned = false;
-          _mostCommonOccurence(object);
+          this._findMaxOccurence(object);
         }
-      });
+      }, this);
 
       this.alignmentMatrix = [];
 
       sequences.forEach(function(sequence, rowIndex) {
+        var alignData = [];
         sequence.forEach(function(character, colIndex) {
-          var alignData = [];
           if(charObjectsByColumn[colIndex].aligned === true) {
             alignData.push('seqChar align');
           } else {
@@ -198,27 +206,31 @@ Example:
               alignData.push('seqChar mismatch');
             }
           }
-
-          alignmentMatrix.push(alignData);
-        });
-      });
+        }, this);
+        this.alignmentMatrix.push(alignData);
+      }, this);
     },
 
     _getCharObjectsByColumn: function(sequences) {
       var charObjects = [];
-      sequences.forEach(function(sequence) {
-        var charObject = {};
-        sequence.forEach(function(character) {
+      sequences[0].forEach(function(col) {
+        charObjects.push({});
+      });
+
+      sequences.forEach(function(sequence, rowIndex) {
+        sequence.forEach(function(character, colIndex) {
+          var charObject = charObjects[colIndex];
+
           if(character !== '-') {
             charObject[character] = (charObject[character]+1) || 1;
           }
         });
-        charObjects.push(charObject);
       });
+
       return charObjects;
     },
 
-    _mostCommonOccurence: function(charObject) {
+    _findMaxOccurence: function(charObject) {
       var keys = Object.keys(charObject);
       var maxOccurence = keys[0];
       for(var i = 1; i < keys.length; i++) {
@@ -229,14 +241,8 @@ Example:
       charObject.maxOccurence = maxOccurence;
     }, 
 
-    _getAlignClass: function(row, col) {
-      if (this.alignData[row][col] === 0) {
-        return 'seqChar align';
-      } else if (this.alignData[row][col] === 1) {
-        return 'seqChar unaligned';
-      } else {
-        return 'seqChar mismatch';
-      }
+    _getAlignClass: function(rowIndex, colIndex) {
+      return this.alignmentMatrix[rowIndex][colIndex];
     }, 
 
     _determineAlign: function(sequences) {
@@ -247,10 +253,10 @@ Example:
       }
     }, 
 
-    _isColumnAligned: function(columnIndex, sequences) {
-      var letter = sequences[0].sequence[columnIndex];
+    _isColumnAligned: function(colIndex, sequences) {
+      var letter = sequences[0].sequence[colIndex];
       for(var i = 1; i < sequences.length; i++) {
-        if(sequences[i].sequence[columnIndex] !== letter) {
+        if(sequences[i].sequence[colIndex] !== letter) {
           return false;
         }
       }
@@ -265,7 +271,7 @@ Example:
 
     ready: function() {
       //generate alignment matrix
-      this._determineAlign(this.sequences);
+      this._determineAlignment(this.parsedData);
     },
 
     attached: function() {

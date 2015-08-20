@@ -174,15 +174,33 @@ Example:
     */
 
     _determineAlignment: function(sequences) {
-      var charObjectsByColumn = [];
-      sequences.forEach(function(sequence) {
-        var charObject = {};
-        sequence.forEach(function(character) {
-          if(character !== '-') {
-            charObject[character] = (charObject[character]+1) || 1;
+      var charObjectsByColumn = _getCharObjectsByColumn(sequences);
+      charObjectsByColumn.forEach(function(object) {
+        if(Object.keys(object).length === 1) {
+          object.aligned = true;
+        } else {
+          object.aligned = false;
+          _mostCommonOccurence(object);
+        }
+      });
+
+      this.alignmentMatrix = [];
+
+      sequences.forEach(function(sequence, rowIndex) {
+        sequence.forEach(function(character, colIndex) {
+          var alignData = [];
+          if(charObjectsByColumn[colIndex].aligned === true) {
+            alignData.push('seqChar align');
+          } else {
+            if(charObjectsByColumn[colIndex].maxOccurence === character || character === '-') {
+              alignData.push('seqChar unalign');
+            } else {
+              alignData.push('seqChar mismatch');
+            }
           }
+
+          alignmentMatrix.push(alignData);
         });
-        charObjectsByColumn.push(charObject);
       });
     },
 
@@ -198,6 +216,17 @@ Example:
         charObjects.push(charObject);
       });
       return charObjects;
+    },
+
+    _mostCommonOccurence: function(charObject) {
+      var keys = Object.keys(charObject);
+      var maxOccurence = keys[0];
+      for(var i = 1; i < keys.length; i++) {
+        if(charObject[maxOccurence] < charObject[keys[i]]) {
+          maxOccurence = keys[i];
+        }
+      }
+      charObject.maxOccurence = maxOccurence;
     }, 
 
     _getAlignClass: function(row, col) {

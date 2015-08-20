@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="./bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="./bower_components/paper-button/paper-button.html">
 
 <!--
 An element that visualizes sequence alignment data. 
@@ -81,19 +82,29 @@ Example:
       </template>
     </table>
 
+    <template is="dom-if" if="{{subsetExists}}">  
+      <paper-button on-click="{{generateAlignedSubset}}">Align Subset</paper-button>
+    </template>
+
+    <template is="dom-if" if="{{alignSubsetGenerated}}">
+      <paper-button on-click="{{resetSubset}}">Reset</paper-button>
+    </template>
+
     <array-selector items="{{parsedData}}" id="alignSelector" selected="{{selected}}" multi toggle></array-selector>
     
-    <div>Selected subset of sequences: </div>
-    <table class="sequenceTable">
-      <template is="dom-repeat" items="{{selected}}" as="sequence" index-as="rowIndex">
-        <tr>
-          <td class="accession">{{sequence.accession}}</td>
-          <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
-            <td class$="{{_getSelectAlignClass(rowIndex, colIndex)}}">{{character}}</td>
-          </template>
-        </tr>
-      </template>
-    </table>
+    <template is="dom-if" if="{{alignSubsetGenerated}}">
+      <div>Selected subset of sequences: </div>
+      <table class="sequenceTable">
+        <template is="dom-repeat" items="{{selected}}" as="sequence" index-as="rowIndex">
+          <tr>
+            <td class="accession">{{sequence.accession}}</td>
+            <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
+              <td class$="{{_getSelectAlignClass(rowIndex, colIndex)}}">{{character}}</td>
+            </template>
+          </tr>
+        </template>
+      </table>
+    </template>
   </template>
 
 </dom-module>
@@ -273,9 +284,12 @@ Example:
     toggleSelection: function(e) {
       var item = this.$.totalAlignVis.itemForElement(e.target);
       this.$.alignSelector.select(item);
-
-      this.selectAlignmentMatrix = [];
-      this._determineAlignment(this.selected, this.selectAlignmentMatrix);
+      
+      if(this.selected.length > 0) {
+        this.subsetExists = true;
+      } else {
+        this.subsetExists = false;
+      }
     }, 
 
     attached: function() {

@@ -76,9 +76,23 @@ Example:
           <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
             <td class$="{{_getAlignClass(rowIndex, colIndex)}}">{{character}}</td>
           </template>
-          <td class="selectSeq"><paper-checkbox checked on-change="_reAlign"></paper-checkbox></td>
+          <td class="selectSeq"><paper-checkbox on-change="toggleSelection"></paper-checkbox></td>
         </tr>
       </template>
+
+      <array-selector items="{{parsedData}}" selected="{{selected}}" multi toggle></array-selector>
+      
+      <div>Selected subset of sequences: </div>
+      <table class="sequenceTable">
+        <template is="dom-repeat" items="{{selected}}" as="sequence" index-as="rowIndex">
+          <tr>
+            <td class="accession">{{sequence.accession}}</td>
+            <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
+              <td class$="{{_getSelectAlignClass(rowIndex, colIndex)}}">{{character}}</td>
+            </template>
+          </tr>
+        </template>
+      </table>
     </table>
   </template>
 
@@ -181,7 +195,7 @@ Example:
 
     */
 
-    _determineAlignment: function(sequences) {
+    _determineAlignment: function(sequences, alignmentMatrix) {
       var charObjectsByColumn = this._getCharObjectsByColumn(sequences);
       charObjectsByColumn.forEach(function(object) {
         if(Object.keys(object).length <= 1) {
@@ -191,8 +205,6 @@ Example:
           this._findMaxOccurence(object);
         }
       }, this);
-
-      this.alignmentMatrix = [];
 
       sequences.forEach(function(sequence, rowIndex) {
         var alignData = [];
@@ -207,7 +219,7 @@ Example:
             }
           }
         }, this);
-        this.alignmentMatrix.push(alignData);
+        alignmentMatrix.push(alignData);
       }, this);
     },
 
@@ -245,33 +257,17 @@ Example:
       return this.alignmentMatrix[rowIndex][colIndex];
     }, 
 
-    _determineAlign: function(sequences) {
-      this.colArray = [];
-      var length = sequences[0].sequence.length;
-      for(var i = 0; i < length; i++) {
-        this.colArray.push(this._isColumnAligned(i, sequences));
-      }
-    }, 
-
-    _isColumnAligned: function(colIndex, sequences) {
-      var letter = sequences[0].sequence[colIndex];
-      for(var i = 1; i < sequences.length; i++) {
-        if(sequences[i].sequence[colIndex] !== letter) {
-          return false;
-        }
-      }
-      return true;
+    _getSelectAlignClass: function(rowIndex, colIndex) {
+      return this.selectAlignmentMatrix[rowIndex][colIndex];
     },
 
-    _reAlign: function() {
-      console.dir(arguments);
-    },
 
     // Element Lifecycle
 
     ready: function() {
       //generate alignment matrix
-      this._determineAlignment(this.parsedData);
+      this.alignmentMatrix = []
+      this._determineAlignment(this.parsedData, this.alignmentMatrix);
     },
 
     attached: function() {

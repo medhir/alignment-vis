@@ -1,6 +1,6 @@
 {
   "name": "alignment-vis",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "authors": [
     "Medhir Bhargava: medhirbhargava@gmail.com"
   ],
@@ -8,8 +8,7 @@
   "keywords": [
     "web-component",
     "web-components",
-    "polymer",
-    "seed"
+    "polymer"
   ],
   "main": "alignment-vis.html",
   "license": "http://polymer.github.io/LICENSE.txt",
@@ -20,8 +19,7 @@
     "/demo/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0",
-    "paper-checkbox": "PolymerElements/paper-checkbox#~1.0.6"
+    "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

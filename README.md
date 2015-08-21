@@ -1,7 +1,9 @@
 alignment-vis
 =============
 
-`alignment-vis` is a web component for visualizing sequence alignment data.
+`alignment-vis` is a web component for visualizing sequence alignment data. To install, use bower: 
+
+`bower install alignment-vis`
 
 To visualize the data, you must pass in the data using the `alignment` attribute. 
 

@@ -100,7 +100,7 @@ Example:
 
     <array-selector items="{{parsedData}}" id="alignSelector" selected="{{selected}}" multi toggle></array-selector>
     
-    <template is="dom-if" if="{{alignedSubset}}">
+    <template is="dom-if" if="{{alignedSubset}}" restamp="true">
       <div>Selected subset of sequences: </div>
       <table class="sequenceTable">
         <template is="dom-repeat" items="{{selected}}" as="sequence" index-as="rowIndex">
@@ -152,15 +152,15 @@ Example:
 
       parsedData: {
         type: Array, 
-        computed: 'parseAlignment(alignment)'
+        computed: '_parseAlignment(alignment)'
       }
 
     },
 
     // Helper functions
-    parseAlignment: function(seqString) {
+    _parseAlignment: function(seqString) {
       var data = [];
-      var parsed = this.splitByNewline(seqString);
+      var parsed = this._splitByNewline(seqString);
 
       parsed.forEach(function(row) {
         var split = row.split(' ');
@@ -176,7 +176,7 @@ Example:
 
     //there is some bug that does not allow using String.prototype.split OR regex matching with '\n' ... 
     //so this hack will have to do for now
-    splitByNewline: function(string) {
+    _splitByNewline: function(string) {
       var parsed = [];
       
       var currString = '', index = 0;
@@ -269,8 +269,9 @@ Example:
 
     _resetSubset: function() {
       this.alignedSubset = false;
+      this.subsetExists = false;
       this.$.alignSelector.clearSelection();
-      this.selectedAlignmentMatrix = [];
+      this.selectAlignmentMatrix = [];
       //reset all checkboxes
       var checkboxes = document.querySelectorAll('paper-checkbox');
       for(var i = 0; i < checkboxes.length; i++) {
@@ -291,7 +292,7 @@ Example:
     toggleSelection: function(e) {
       var item = this.$.totalAlignVis.itemForElement(e.target);
       this.$.alignSelector.select(item);
-      
+
       if(this.selected.length > 0) {
         this.subsetExists = true;
       } else {

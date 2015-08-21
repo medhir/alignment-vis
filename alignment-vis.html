@@ -16,7 +16,7 @@ An element that visualizes sequence alignment data.
 
 Example:
 
-    <alignment-vis></alignment-vis>
+    <alignment-vis alignment="accessionA PKS--KTVKST-V\naccessionB PKV-VKTVKST-V\naccessionC PK---KTVK-T-V\naccessionD PKV-VKTVK-T-V"></alignment-vis>
 
 @demo
 -->
@@ -76,6 +76,7 @@ Example:
 
   <template>
 
+    <!-- The original alignment visualization based on data passed in to the HTML element -->
     <table class="sequenceTable">
       <template is="dom-repeat" id="totalAlignVis" items="{{parsedData}}" as="sequence" index-as="rowIndex">
         <tr>
@@ -91,15 +92,17 @@ Example:
     </table>
 
     <template is="dom-if" if="{{subsetExists}}">  
-      <paper-button class="visButton" raised on-click="_generateAlignedSubset">Align Subset</paper-button>
+      <paper-button class="visButton" raised on-click="_generateAlignedSubset">Visualize Subset</paper-button>
     </template>
 
     <template is="dom-if" if="{{alignedSubset}}">
       <paper-button class="visButton" raised on-click="_resetSubset">Reset</paper-button>
     </template>
 
+    <!-- Allows user to select subset of sequence data -->
     <array-selector items="{{parsedData}}" id="alignSelector" selected="{{selected}}" multi toggle></array-selector>
     
+    <!-- This will show up if a user asks to visualize the subset of data they selected -->
     <template is="dom-if" if="{{alignedSubset}}" restamp="true">
       <div>Selected subset of sequences: </div>
       <table class="sequenceTable">
@@ -148,6 +151,10 @@ Example:
 
       /**
        * Exposes alignment data as an array
+       *
+       * The array also has properties "accession" and "annotations" 
+       * to store the sequence identifier and any associated annotations
+       *
        */
 
       parsedData: {
@@ -158,6 +165,8 @@ Example:
     },
 
     // Helper functions
+
+    //places the raw data in string format and parses it into an object
     _parseAlignment: function(seqString) {
       var data = [];
       var parsed = this._splitByNewline(seqString);
@@ -195,6 +204,22 @@ Example:
       return parsed;
     },
 
+   /*
+    Approach: 
+
+    - function takes in an array containing one or more sequences, and the matrix that will contain class names
+    - for each column in matrix, create an object with letters as keys, count frequency of each letter
+        ignore '-'
+    - if only one key exists in object, column is aligned
+        assign 'seqChar align' to new matrix that contains visualization data
+    - if two or more characters exist
+        determine most frequently occuring character 
+        assign 'seqChar unalign' to max occuring char or '-'
+        assign 'seqChar mismatch' to all other chars
+    */
+
+    //this will create a matrix of class names to be added to each character in the sequences to highlight
+    //the background appropriately. 
     _determineAlignment: function(sequences, alignmentMatrix) {
       var charObjectsByColumn = this._getCharObjectsByColumn(sequences);
       charObjectsByColumn.forEach(function(object) {
@@ -223,6 +248,7 @@ Example:
       }, this);
     },
 
+    //Determines frequency of each character in a column 
     _getCharObjectsByColumn: function(sequences) {
       var charObjects = [];
       sequences[0].forEach(function(col) {
@@ -242,6 +268,9 @@ Example:
       return charObjects;
     },
 
+    //finds the most frequently occuring character in a column
+    //if there are two most frequently occuring characters
+      //will return the first one found within the object's keys
     _findMaxOccurence: function(charObject) {
       var keys = Object.keys(charObject);
       var maxOccurence = keys[0];
@@ -253,10 +282,12 @@ Example:
       charObject.maxOccurence = maxOccurence;
     }, 
 
+    //helper function for computed binding in original alignment visualization
     _getAlignClass: function(rowIndex, colIndex) {
       return this.alignmentMatrix[rowIndex][colIndex];
     }, 
 
+    //helper function for computed binding in subset alignment visualization
     _getSelectAlignClass: function(rowIndex, colIndex) {
       return this.selectAlignmentMatrix[rowIndex][colIndex];
     },
@@ -272,6 +303,7 @@ Example:
       this.subsetExists = false;
       this.$.alignSelector.clearSelection();
       this.selectAlignmentMatrix = [];
+
       //reset all checkboxes
       var checkboxes = document.querySelectorAll('paper-checkbox');
       for(var i = 0; i < checkboxes.length; i++) {
@@ -289,6 +321,7 @@ Example:
       this.alignedSubset = false;
     },
 
+    //adds sequence data to the subset to be visualized
     toggleSelection: function(e) {
       var item = this.$.totalAlignVis.itemForElement(e.target);
       this.$.alignSelector.select(item);
@@ -298,22 +331,6 @@ Example:
       } else {
         this.subsetExists = false;
       }
-    }, 
-
-    attached: function() {
-      // `attached` fires once the element and its parents have been inserted
-      // into a document.
-      //
-      // This is a good place to perform any work related to your element's
-      // visual state or active behavior (measuring sizes, beginning animations,
-      // loading resources, etc).
-    },
-
-    detached: function() {
-      // The analog to `attached`, `detached` fires when the element has been
-      // removed from a document.
-      //
-      // Use this to clean up anything you did in `attached`.
     }
 
   });

@@ -12,7 +12,7 @@ For example, given the sequence data:
 - accessionC PK---KTVK-T-V
 - accessionD PKV-VKTVK-T-V
 
-A visualization would be created by passing in the data delimited by newline characters, like so: 
+A visualization would be created by passing in the data to the component's `alignment` property, delimited by newline characters like this: 
 
 ```html
 <alignment-vis alignment="accessionA PKS--KTVKST-V\naccessionB PKV-VKTVKST-V\naccessionC PK---KTVK-T-V"></alignment-vis>

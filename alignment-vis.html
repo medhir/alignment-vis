@@ -32,6 +32,11 @@ Example:
       font-size: 1.7em;
     }
 
+    .visButton {
+      background-color: #0066FF;
+      color: #FFF;
+    }
+
     td {
       cursor: pointer;
     }
@@ -70,6 +75,7 @@ Example:
   </style>
 
   <template>
+
     <table class="sequenceTable">
       <template is="dom-repeat" id="totalAlignVis" items="{{parsedData}}" as="sequence" index-as="rowIndex">
         <tr>
@@ -77,22 +83,24 @@ Example:
           <template is="dom-repeat" items="{{sequence}}" as="character" index-as="colIndex">
             <td class$="{{_getAlignClass(rowIndex, colIndex)}}">{{character}}</td>
           </template>
-          <td class="selectSeq"><paper-checkbox on-change="toggleSelection"></paper-checkbox></td>
+          <template is="dom-if" if="{{!alignedSubset}}">
+            <td class="selectSeq"><paper-checkbox on-change="toggleSelection"></paper-checkbox></td>
+          </template>
         </tr>
       </template>
     </table>
 
     <template is="dom-if" if="{{subsetExists}}">  
-      <paper-button on-click="{{generateAlignedSubset}}">Align Subset</paper-button>
+      <paper-button class="visButton" raised on-click="_generateAlignedSubset">Align Subset</paper-button>
     </template>
 
-    <template is="dom-if" if="{{alignSubsetGenerated}}">
-      <paper-button on-click="{{resetSubset}}">Reset</paper-button>
+    <template is="dom-if" if="{{alignedSubset}}">
+      <paper-button class="visButton" raised on-click="_resetSubset">Reset</paper-button>
     </template>
 
     <array-selector items="{{parsedData}}" id="alignSelector" selected="{{selected}}" multi toggle></array-selector>
     
-    <template is="dom-if" if="{{alignSubsetGenerated}}">
+    <template is="dom-if" if="{{alignedSubset}}">
       <div>Selected subset of sequences: </div>
       <table class="sequenceTable">
         <template is="dom-repeat" items="{{selected}}" as="sequence" index-as="rowIndex">
@@ -105,6 +113,7 @@ Example:
         </template>
       </table>
     </template>
+
   </template>
 
 </dom-module>
@@ -186,26 +195,6 @@ Example:
       return parsed;
     },
 
-    _splitSequence: function(sequence) {
-      return sequence.split('');
-    },
-
-    /*
-
-    Approach: 
-
-      - function takes in an array containing one or more sequences
-      - for each column in matrix, create an object with letters as keys, count frequency of each letter
-          ignore '-'
-      - if only one key exists in object, column is aligned
-          assign 'seqChar align' to new matrix that contains visualization data
-      - if two or more characters exist
-          determine most frequently occuring character 
-          assign 'seqChar unalign' to max occuring char or '-'
-          assign 'seqChar mismatch' to all other chars
-
-    */
-
     _determineAlignment: function(sequences, alignmentMatrix) {
       var charObjectsByColumn = this._getCharObjectsByColumn(sequences);
       charObjectsByColumn.forEach(function(object) {
@@ -272,6 +261,22 @@ Example:
       return this.selectAlignmentMatrix[rowIndex][colIndex];
     },
 
+    _generateAlignedSubset: function() {
+      this.selectAlignmentMatrix = [];
+      this._determineAlignment(this.selected, this.selectAlignmentMatrix);
+      this.alignedSubset = true;
+    }, 
+
+    _resetSubset: function() {
+      this.alignedSubset = false;
+      this.$.alignSelector.clearSelection();
+      this.selectedAlignmentMatrix = [];
+      //reset all checkboxes
+      var checkboxes = document.querySelectorAll('paper-checkbox');
+      for(var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = false;
+      }
+    }, 
 
     // Element Lifecycle
 
@@ -279,6 +284,8 @@ Example:
       //generate alignment matrix
       this.alignmentMatrix = []
       this._determineAlignment(this.parsedData, this.alignmentMatrix);
+      this.subsetExists = false;
+      this.alignedSubset = false;
     },
 
     toggleSelection: function(e) {
